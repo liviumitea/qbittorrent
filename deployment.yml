@@ -1,0 +1,88 @@
+# namespace.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: qbittorrent
+---
+# deployment-qbittorrent.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qbittorrent
+  namespace: qbittorrent
+  labels:
+    app: qbittorrent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: qbittorrent
+  template:
+    metadata:
+      labels:
+        app: qbittorrent
+    spec:
+      containers:
+      - name: qbittorrent
+        image: lscr.io/linuxserver/qbittorrent:latest
+        env:
+        - name: PUID
+          value: "1000"
+        - name: PGID
+          value: "1000"
+        - name: TZ
+          value: "Etc/UTC"
+        - name: WEBUI_PORT
+          value: "8080"
+        - name: TORRENTING_PORT
+          value: "6881"
+        ports:
+        - name: webui
+          containerPort: 8080
+          protocol: TCP
+        - name: torrent-tcp
+          containerPort: 6881
+          protocol: TCP
+        - name: torrent-udp
+          containerPort: 6881
+          protocol: UDP
+        volumeMounts:
+        - name: config-volume
+          mountPath: /config
+        - name: downloads-volume
+          mountPath: /downloads
+      volumes:
+      - name: config-volume
+        hostPath:
+          path: /path/to/qbittorrent/appdata
+          type: DirectoryOrCreate
+      - name: downloads-volume
+        hostPath:
+          path: /data-nfs/data/plex
+          type: DirectoryOrCreate
+---
+# service-qbittorrent.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: qbittorrent-service
+  namespace: qbittorrent
+spec:
+  type: LoadBalancer
+  # Uncomment and set if you need a specific LB IP:
+  loadBalancerIP: 172.16.23.27
+  selector:
+    app: qbittorrent
+  ports:
+  - name: webui
+    protocol: TCP
+    port: 8080
+    targetPort: 8080
+  - name: torrent-tcp
+    protocol: TCP
+    port: 6881
+    targetPort: 6881
+  - name: torrent-udp
+    protocol: UDP
+    port: 6881
+    targetPort: 6881
