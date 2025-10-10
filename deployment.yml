@@ -54,7 +54,7 @@ spec:
       volumes:
       - name: config-volume
         hostPath:
-          path: /path/to/qbittorrent/appdata
+          path: /data/qbittorrent/appdata
           type: DirectoryOrCreate
       - name: downloads-volume
         hostPath:
