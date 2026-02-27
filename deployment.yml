@@ -46,6 +46,10 @@ spec:
         - name: torrent-udp
           containerPort: 6881
           protocol: UDP
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 1000
+          fsGroup: 1000  
         volumeMounts:
         - name: config-volume
           mountPath: /config
